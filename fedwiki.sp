@@ -121,11 +121,13 @@ dashboard "fedwiki" {
 
       table {
         width = 4
-        title = "ward.dojo.fed.wiki link counts"
+        title = "ward.dojo.fed.wiki links by update"
         args = [ self.input.limit.value ]
         sql = <<EOQ
           select
-            *
+            slug,
+            link,
+            updated
           from
             fedwiki_data()
           order by
