@@ -87,26 +87,10 @@ dashboard "fedwiki" {
         width = 4
         args = [ self.input.limit.value ]
         sql = <<EOQ
-          with data as (
-            select
-              jsonb_object_keys(
-                jsonb_array_elements(response_body :: jsonb) -> 'links'
-              ) as slug
-            from
-              net_http_request
-            where
-              url = 'http://ward.dojo.fed.wiki/system/sitemap.json'
-          )
           select
-            slug,
-            count(*)
+            *
           from
-            data
-          group by
-            slug
-          order by
-            count desc,
-            slug
+            fedwiki_data()
           limit $1
         EOQ
       }
