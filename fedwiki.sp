@@ -88,24 +88,14 @@ dashboard "fedwiki" {
         args = [ self.input.limit.value ]
         sql = <<EOQ
           select
-            *
+            slug,
+            count(*)
           from
             fedwiki_data()
-          limit $1
-        EOQ
-      }
-
-      table {
-        width = 4
-        title = "ward.dojo.fed.wiki links by recently-updated pages"
-        args = [ self.input.limit.value ]
-        sql = <<EOQ
-          select
-            *
-          from
-            fedwiki_data()
+          group by
+            slug
           order by
-            updated desc nulls last
+            count desc
           limit $1
         EOQ
       }
@@ -113,7 +103,7 @@ dashboard "fedwiki" {
       chart {
         type = "donut"
         width = 4
-        title = "ward.dojo.fed.wiki links by frequency"
+        title = "ward.dojo.fed.wiki link counts"
         args = [ self.input.limit.value ]
         sql = <<EOQ
           select
@@ -125,6 +115,21 @@ dashboard "fedwiki" {
             slug
           order by
             count desc
+          limit $1
+        EOQ
+      }
+
+      table {
+        width = 4
+        title = "ward.dojo.fed.wiki link counts"
+        args = [ self.input.limit.value ]
+        sql = <<EOQ
+          select
+            *
+          from
+            fedwiki_data()
+          order by
+            updated desc nulls last
           limit $1
         EOQ
       }
