@@ -12,5 +12,5 @@ To use this dashboard:
 
 5. Visit `http://localhost:9194`
 
-https://user-images.githubusercontent.com/46509/217649538-6c25ca12-3023-4f70-b9a2-1f4873802653.mp4
+https://user-images.githubusercontent.com/46509/217674463-f568a930-f148-4c40-8629-3f61c83e4383.mp4
 
