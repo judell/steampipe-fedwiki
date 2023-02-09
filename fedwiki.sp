@@ -28,29 +28,50 @@ dashboard "fedwiki" {
     EOQ
   }
 
+  with "fedwiki_since" {
+    sql = <<EOQ
+      create or replace function public.fedwiki_since(since interval) returns table (
+        label text,
+        value text
+      ) as $$
+         select
+           since,
+           to_char(now() - since, 'YYYY-MM-DD')
+      $$ language sql
+    EOQ
+  }
+
+
   container {
 
     input "since" {
       width = 2
       title = "updated since"
       sql = <<EOQ
-        with days(interval, day) as (
-        values
-          ( '1 week', to_char(now() - interval '1 week', 'YYYY-MM-DD') ),
-          ( '2 weeks', to_char(now() - interval '2 week', 'YYYY-MM-DD') ),
-          ( '1 month', to_char(now() - interval '1 month', 'YYYY-MM-DD') ),
-          ( '3 months', to_char(now() - interval '3 month', 'YYYY-MM-DD') ),
-          ( '6 months', to_char(now() - interval '6 month', 'YYYY-MM-DD') ),
-          ( '1 year', to_char(now() - interval '1 year', 'YYYY-MM-DD') ),
-          ( '2 years', to_char(now() - interval '2 year', 'YYYY-MM-DD') )
+        with options as (
+          select * from fedwiki_since(interval '1 week')
+          union
+          select * from fedwiki_since(interval '2 weeks')
+          union
+          select * from fedwiki_since(interval '1 month')
+          union
+          select * from fedwiki_since(interval '3 months')
+          union
+          select * from fedwiki_since(interval '6 months')
+          union
+          select * from fedwiki_since(interval '1 year')
+          union
+          select * from fedwiki_since(interval '2 years')
+          union
+          select * from fedwiki_since(interval '5 years')
         )
         select
-          interval as label,
-          day as value
+          label,
+          value
         from
-          days
+          options
         order by
-          day desc
+          value desc
       EOQ    
     }  
 
