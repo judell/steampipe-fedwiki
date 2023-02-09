@@ -1,5 +1,33 @@
 dashboard "fedwiki" {
 
+  with "fedwiki_data" {
+    sql = <<EOQ
+      create or replace function public.fedwiki_data() returns table (
+        slug text,
+        updated text,
+        link text
+      ) as $$
+      with data as (
+        select
+          jsonb_array_elements(response_body::jsonb) as json,
+          jsonb_object_keys(
+            jsonb_array_elements(response_body :: jsonb) -> 'links'
+          ) as link
+        from
+          net_http_request
+        where
+          url = 'http://ward.dojo.fed.wiki/system/sitemap.json'
+      )
+      select
+        json->>'slug',
+        to_char(to_timestamp( (json->>'date')::numeric / 1000), 'YYYY-MM-DD'),
+        link
+      from
+        data
+      $$ language sql
+    EOQ
+  }
+
   container {
 
     input "since" {
@@ -138,45 +166,6 @@ dashboard "fedwiki" {
 
     }
 
-  }
-
-  with "fedwiki_data" {
-    sql = <<EOQ
-      create or replace function fedwiki_data() returns table (
-        slug text,
-        updated text,
-        link text
-      ) as $$
-      with data as (
-        select
-          jsonb_array_elements(response_body::jsonb) as json,
-          jsonb_object_keys(
-            jsonb_array_elements(response_body :: jsonb) -> 'links'
-          ) as link
-        from
-          net_http_request
-        where
-          url = 'http://ward.dojo.fed.wiki/system/sitemap.json'
-      )
-      select
-        json->>'slug' as slug,
-        fedwiki_print_date(json->>'date') as updated,
-        link
-      from
-        data
-      order by
-        link desc,
-        updated desc nulls last
-      $$ language sql
-    EOQ
-  }
-
-  with "fedwiki_print_date" {
-    sql = <<EOQ
-      create or replace function fedwiki_print_date(date text) returns text as $$
-        select to_char(to_timestamp(date::numeric / 1000), 'YYYY-MM-DD')
-      $$ language sql;
-    EOQ
   }
 
 }
